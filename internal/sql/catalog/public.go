@@ -33,6 +33,8 @@ func (c *Catalog) ListFuncsByName(rel *ast.FuncName) ([]Function, error) {
 }
 
 func (c *Catalog) ResolveFuncCall(call *ast.FuncCall) (*Function, error) {
+	fmt.Printf("DEBUG: function :: %s\n", call.Func.Name)
+
 	// Do not validate unknown functions
 	funs, err := c.ListFuncsByName(call.Func)
 	if err != nil || len(funs) == 0 {
@@ -63,7 +65,6 @@ func (c *Catalog) ResolveFuncCall(call *ast.FuncCall) (*Function, error) {
 		}
 	}
 
-	fmt.Printf("DEBUG: function :: %s\n", call.Func.Name)
 	fmt.Printf("  positional args: %#v\n", positional)
 	fmt.Printf("  named args: %#v\n", named)
 
