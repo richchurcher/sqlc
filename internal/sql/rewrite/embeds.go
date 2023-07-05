@@ -39,17 +39,17 @@ func (es EmbedSet) Find(node *ast.ColumnRef) (*Embed, bool) {
 // `nullable` is passed as a second parameter, embed attempts to use a nil
 // pointer as the embedded type.
 func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
-	fmt.Printf("DEBUG: raw :: %#v", raw)
+	fmt.Printf("DEBUG: raw :: %#v\n", raw)
 	var embeds []*Embed
 
 	node := astutils.Apply(raw, func(cr *astutils.Cursor) bool {
 		node := cr.Node()
-		fmt.Printf("DEBUG: node :: %#v", node)
+		fmt.Printf("DEBUG: node :: %#v\n", node)
 
 		switch {
 		case isEmbed(node):
 			fun := node.(*ast.FuncCall)
-			fmt.Printf("DEBUG: fun :: %#v", fun)
+			fmt.Printf("DEBUG: fun :: %#v\n", fun)
 			nArgs := len(fun.Args.Items)
 
 			if nArgs < 1 || nArgs > 2 {

@@ -78,24 +78,25 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 			option := call.Args.Items[1]
 			switch n := option.(type) {
 			case *ast.ColumnRef:
-				val := option.(*ast.A_Const).Val
-				if str, ok := val.(*ast.String); ok {
-					fmt.Printf("DEBUG: str :: %s", str)
-					if str.Str != "nullable" {
-
-						v.err = &sqlerr.Error{
-							Message:  fmt.Sprintf("valid options for sqlc.%s are: `nullable`, got %s", fn.Name, str),
-							Location: call.Pos(),
-						}
-						return nil
-					}
-				} else {
-					v.err = &sqlerr.Error{
-						Message:  fmt.Sprintf("options for sqlc.%s must be string", fn.Name),
-						Location: call.Pos(),
-					}
-					return nil
-				}
+				vals := option.(*ast.ColumnRef).Fields.Items
+				fmt.Printf("DEBUG: len(vals) :: %d\n", len(vals))
+				// if str, ok := val.(*ast.String); ok {
+				// 	fmt.Printf("DEBUG: str :: %s", str)
+				// 	if str.Str != "nullable" {
+				//
+				// 		v.err = &sqlerr.Error{
+				// 			Message:  fmt.Sprintf("valid options for sqlc.%s are: `nullable`, got %s", fn.Name, str),
+				// 			Location: call.Pos(),
+				// 		}
+				// 		return nil
+				// 	}
+				// } else {
+				// 	v.err = &sqlerr.Error{
+				// 		Message:  fmt.Sprintf("options for sqlc.%s must be string", fn.Name),
+				// 		Location: call.Pos(),
+				// 	}
+				// 	return nil
+				// }
 			default:
 				fields := n.(*ast.ColumnRef).Fields
 				v.err = &sqlerr.Error{
@@ -107,8 +108,7 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 			}
 		}
 
-		// If we have sqlc.arg or sqlc.narg, there is no need to resolve the function call.
-		// It won't resolve anyway, since it is not a real function.
+		// Don't try to resolve `sqlc.` functions.
 		return nil
 	}
 
