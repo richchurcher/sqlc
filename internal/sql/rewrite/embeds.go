@@ -47,15 +47,18 @@ func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
 		switch {
 		case isEmbed(node):
 			fun := node.(*ast.FuncCall)
-			fmt.Printf("DEBUG: -- Embed -- fun :: %#v\n", fun)
 			nArgs := len(fun.Args.Items)
-			fmt.Printf("DEBUG: -- Embed -- nArgs :: %#v\n", nArgs)
 
 			if nArgs < 1 || nArgs > 2 {
 				return false
 			}
 
-			fmt.Printf("DEBUG: -- Embed -- args :: %#v\n", fun.Args)
+			if nArgs == 2 {
+				fmt.Printf("DEBUG: -- Embed -- fun :: %#v\n", fun)
+				fmt.Printf("  args :: %#v\n", fun.Args)
+				p, _ := flatten(fun.Args)
+				fmt.Printf("  param :: %#v\n", p)
+			}
 			param, _ := flatten(fun.Args)
 
 			node := &ast.ColumnRef{

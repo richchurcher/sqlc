@@ -292,7 +292,6 @@ func (comp *Compiler) resolveCatalogRefs(qc *QueryCatalog, rvs []*ast.RangeVar, 
 			}
 
 		case *ast.FuncCall:
-			fmt.Printf("DEBUG: n.Func.Name :: %s", n.Func.Name)
 			fun, err := c.ResolveFuncCall(n)
 			if err != nil {
 				// Synthesize a function on the fly to avoid returning with an error
