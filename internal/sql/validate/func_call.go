@@ -95,12 +95,11 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 					return nil
 				}
 			default:
+				fields := n.(*ast.ColumnRef).Fields
 				v.err = &sqlerr.Error{
-					Message:  fmt.Sprintf("expected parameter to sqlc.%s to be string or reference; got %T (%#v)", fn.Name, n, n.(*ast.ColumnRef).Fields),
+					Message:  fmt.Sprintf("expected parameter to sqlc.%s to be string or reference; got %T (%#v)", fn.Name, n, fields.Items),
 					Location: call.Pos(),
 				}
-				fields := n.(*ast.ColumnRef).Fields
-				fmt.Printf(" :: fields :: %#v", fields.Items)
 				return nil
 			}
 		}
