@@ -63,9 +63,6 @@ func (c *Catalog) ResolveFuncCall(call *ast.FuncCall) (*Function, error) {
 		}
 	}
 
-	fmt.Printf("  positional args: %#v\n", positional)
-	fmt.Printf("  named args: %#v\n", named)
-
 	for _, fun := range funs {
 		args := fun.InArgs()
 		var defaults int

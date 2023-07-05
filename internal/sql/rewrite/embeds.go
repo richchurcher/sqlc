@@ -61,7 +61,7 @@ func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
 				}
 			}
 			param, _ := flatten(fun.Args.Items[0])
-			fmt.Printf("DEBUG: nullable embed :: %#v", isNullable)
+			fmt.Printf("DEBUG: nullable embed :: %#v\n", isNullable)
 
 			node := &ast.ColumnRef{
 				Fields: &ast.List{
