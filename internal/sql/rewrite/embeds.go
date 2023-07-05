@@ -56,8 +56,10 @@ func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
 			if nArgs == 2 {
 				fmt.Printf("DEBUG: -- Embed -- fun :: %#v\n", fun)
 				fmt.Printf("  args :: %#v\n", fun.Args)
-				p, _ := flatten(fun.Args)
-				fmt.Printf("  param :: %#v\n", p)
+				one, _ := flatten(fun.Args.Items[0])
+				fmt.Printf("  one :: %#v\n", one)
+				two, _ := flatten(fun.Args.Items[1])
+				fmt.Printf("  two :: %#v\n", two)
 			}
 			param, _ := flatten(fun.Args)
 
