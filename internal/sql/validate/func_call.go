@@ -96,7 +96,7 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 				}
 			default:
 				v.err = &sqlerr.Error{
-					Message:  fmt.Sprintf("expected parameter to sqlc.%s to be string or reference; got %T", fn.Name, n),
+					Message:  fmt.Sprintf("expected parameter to sqlc.%s to be string or reference; got %T at pos %d", fn.Name, n, call.Pos()),
 					Location: call.Pos(),
 				}
 				return nil
