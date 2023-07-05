@@ -44,13 +44,13 @@ func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
 
 	node := astutils.Apply(raw, func(cr *astutils.Cursor) bool {
 		node := cr.Node()
-		fmt.Printf("DEBUG: node :: %#v\n", node)
 
 		switch {
 		case isEmbed(node):
 			fun := node.(*ast.FuncCall)
-			fmt.Printf("DEBUG: fun :: %#v\n", fun)
+			fmt.Printf("DEBUG: -- Embed -- fun :: %#v\n", fun)
 			nArgs := len(fun.Args.Items)
+			fmt.Printf("DEBUG: -- Embed -- nArgs :: %#v\n", nArgs)
 
 			if nArgs < 1 || nArgs > 2 {
 				return false
