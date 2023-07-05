@@ -80,7 +80,9 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 			case *ast.ColumnRef:
 				val := option.(*ast.A_Const).Val
 				if str, ok := val.(*ast.String); ok {
+					fmt.Printf("DEBUG: str :: %s", str)
 					if str.Str != "nullable" {
+
 						v.err = &sqlerr.Error{
 							Message:  fmt.Sprintf("valid options for sqlc.%s are: `nullable`, got %s", fn.Name, str),
 							Location: call.Pos(),
