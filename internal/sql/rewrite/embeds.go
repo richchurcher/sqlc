@@ -53,15 +53,15 @@ func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
 				return false
 			}
 
+			isNullable := false
 			if nArgs == 2 {
-				fmt.Printf("DEBUG: -- Embed -- fun :: %#v\n", fun)
-				fmt.Printf("  args :: %#v\n", fun.Args)
-				one, _ := flatten(fun.Args.Items[0])
-				fmt.Printf("  one :: %#v\n", one)
-				two, _ := flatten(fun.Args.Items[1])
-				fmt.Printf("  two :: %#v\n", two)
+				option, _ := flatten(fun.Args.Items[1])
+				if option == "nullable" {
+					isNullable = true
+				}
 			}
-			param, _ := flatten(fun.Args)
+			param, _ := flatten(fun.Args.Items[0])
+			fmt.Printf("DEBUG: nullable embed :: %#v", isNullable)
 
 			node := &ast.ColumnRef{
 				Fields: &ast.List{
