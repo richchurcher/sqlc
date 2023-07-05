@@ -1,6 +1,7 @@
 package sqlite
 
 import (
+	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -223,6 +224,7 @@ func (c *cc) convertDrop_stmtContext(n *parser.Drop_stmtContext) ast.Node {
 func (c *cc) convertFuncContext(n *parser.Expr_functionContext) ast.Node {
 	if name, ok := n.Qualified_function_name().(*parser.Qualified_function_nameContext); ok {
 		funcName := strings.ToLower(name.Function_name().GetText())
+		fmt.Printf("DEBUG: funcName :: %s", funcName)
 
 		schema := ""
 		if name.Schema_name() != nil {
