@@ -80,6 +80,7 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 			case *ast.ColumnRef:
 				vals := option.(*ast.ColumnRef).Fields.Items
 				fmt.Printf("DEBUG: len(vals) :: %d\n", len(vals))
+				return nil
 				// if str, ok := val.(*ast.String); ok {
 				// 	fmt.Printf("DEBUG: str :: %s", str)
 				// 	if str.Str != "nullable" {
