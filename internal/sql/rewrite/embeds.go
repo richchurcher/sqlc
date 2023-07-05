@@ -9,14 +9,15 @@ import (
 
 // Embed is an instance of `sqlc.embed(param)`
 type Embed struct {
-	Table *ast.TableName
-	param string
-	Node  *ast.ColumnRef
+	Table  *ast.TableName
+	param  string
+	Node   *ast.ColumnRef
+	option string
 }
 
 // Orig string to replace
 func (e Embed) Orig() string {
-	return fmt.Sprintf("sqlc.embed(%s)", e.param)
+	return fmt.Sprintf("sqlc.embed(%s, %s)", e.param, e.option)
 }
 
 // EmbedSet is a set of Embed instances
@@ -34,18 +35,24 @@ func (es EmbedSet) Find(node *ast.ColumnRef) (*Embed, bool) {
 
 // Embeds rewrites `sqlc.embed(param)` to a `ast.ColumnRef` of form `param.*`.
 // The compiler can make use of the returned `EmbedSet` while expanding the
-// `param.*` column refs to produce the correct source edits.
+// `param.*` column refs to produce the correct source edits. If an optional
+// `nullable` is passed as a second parameter, embed attempts to use a nil
+// pointer as the embedded type.
 func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
+	fmt.Printf("DEBUG: raw :: %#v", raw)
 	var embeds []*Embed
 
 	node := astutils.Apply(raw, func(cr *astutils.Cursor) bool {
 		node := cr.Node()
+		fmt.Printf("DEBUG: node :: %#v", node)
 
 		switch {
 		case isEmbed(node):
 			fun := node.(*ast.FuncCall)
+			fmt.Printf("DEBUG: fun :: %#v", fun)
+			nArgs := len(fun.Args.Items)
 
-			if len(fun.Args.Items) == 0 {
+			if nArgs < 1 || nArgs > 2 {
 				return false
 			}
 
