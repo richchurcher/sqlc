@@ -76,7 +76,7 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 		// rest of this block does. Meanwhile, check for the only valid use of the second argument.
 		if len(call.Args.Items) == 2 {
 			option := call.Args.Items[1]
-			switch n := option.(type) {
+			switch option.(type) {
 			case *ast.A_Const:
 				val := option.(*ast.A_Const).Val
 				if str, ok := val.(*ast.String); ok {
@@ -95,12 +95,12 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 					return nil
 				}
 			default:
-				fields := n.(*ast.ColumnRef).Fields
-				v.err = &sqlerr.Error{
-					Message:  fmt.Sprintf("expected parameter to sqlc.%s to be string or reference; got %T (%#v)", fn.Name, n, fields.Items[0].(*ast.String)),
-					Location: call.Pos(),
-				}
-				return nil
+				// fields := n.(*ast.ColumnRef).Fields
+				// v.err = &sqlerr.Error{
+				// 	Message:  fmt.Sprintf("expected parameter to sqlc.%s to be string or reference; got %T (%#v)", fn.Name, n, fields.Items[0].(*ast.String)),
+				// 	Location: call.Pos(),
+				// }
+				return v
 			}
 		}
 
