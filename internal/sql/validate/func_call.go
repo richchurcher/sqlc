@@ -99,6 +99,8 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 					Message:  fmt.Sprintf("expected parameter to sqlc.%s to be string or reference; got %T (%#v)", fn.Name, n, n.(*ast.ColumnRef).Fields),
 					Location: call.Pos(),
 				}
+				fields := n.(*ast.ColumnRef).Fields
+				fmt.Printf(" :: fields :: %#v", fields.Items)
 				return nil
 			}
 		}
