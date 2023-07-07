@@ -31,7 +31,7 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 		return v
 	}
 
-	// Custom validation for `sqlc.` functions
+	// Custom validation for sqlc.arg, sqlc.narg and sqlc.slice
 	// TODO: Replace this once type-checking is implemented
 	if fn.Schema == "sqlc" {
 		if !(fn.Name == "arg" || fn.Name == "narg" || fn.Name == "slice" || fn.Name == "embed") {
@@ -39,28 +39,13 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 			return nil
 		}
 
-		minArgCount := 1
-		maxArgCount := 1
-		if fn.Name == "embed" {
-			maxArgCount = 2
-		}
-
-		if len(call.Args.Items) < minArgCount {
+		if len(call.Args.Items) != 1 {
 			v.err = &sqlerr.Error{
-				Message:  fmt.Sprintf("expected at least %d parameter(s) to sqlc.%s; got %d", minArgCount, fn.Name, len(call.Args.Items)),
+				Message:  fmt.Sprintf("expected 1 parameter to sqlc.%s; got %d", fn.Name, len(call.Args.Items)),
 				Location: call.Pos(),
 			}
 			return nil
 		}
-
-		if len(call.Args.Items) > maxArgCount {
-			v.err = &sqlerr.Error{
-				Message:  fmt.Sprintf("expected at most %d parameter(s) to sqlc.%s; got %d", maxArgCount, fn.Name, len(call.Args.Items)),
-				Location: call.Pos(),
-			}
-			return nil
-		}
-
 		switch n := call.Args.Items[0].(type) {
 		case *ast.A_Const:
 		case *ast.ColumnRef:
@@ -72,44 +57,8 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 			return nil
 		}
 
-		// This is obviously not a flexible solution, but likely to go away entirely when the
-		// rest of this block does. Meanwhile, check for the only valid use of the second argument.
-		if len(call.Args.Items) == 2 {
-			option := call.Args.Items[1]
-			switch n := option.(type) {
-			case *ast.ColumnRef:
-				vals := option.(*ast.ColumnRef).Fields.Items
-				fmt.Printf("DEBUG: len(vals) :: %d\n", len(vals))
-				return nil
-				// if str, ok := val.(*ast.String); ok {
-				// 	fmt.Printf("DEBUG: str :: %s", str)
-				// 	if str.Str != "nullable" {
-				//
-				// 		v.err = &sqlerr.Error{
-				// 			Message:  fmt.Sprintf("valid options for sqlc.%s are: `nullable`, got %s", fn.Name, str),
-				// 			Location: call.Pos(),
-				// 		}
-				// 		return nil
-				// 	}
-				// } else {
-				// 	v.err = &sqlerr.Error{
-				// 		Message:  fmt.Sprintf("options for sqlc.%s must be string", fn.Name),
-				// 		Location: call.Pos(),
-				// 	}
-				// 	return nil
-				// }
-			default:
-				fields := n.(*ast.ColumnRef).Fields
-				v.err = &sqlerr.Error{
-					// TODO: fix
-					Message:  fmt.Sprintf("expected parameter to sqlc.%s to be string or reference; got %T (%#v)", fn.Name, n, fields.Items[0].(*ast.String)),
-					Location: call.Pos(),
-				}
-				return nil
-			}
-		}
-
-		// Don't try to resolve `sqlc.` functions.
+		// If we have sqlc.arg or sqlc.narg, there is no need to resolve the function call.
+		// It won't resolve anyway, sinc it is not a real function.
 		return nil
 	}
 

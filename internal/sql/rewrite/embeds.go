@@ -9,15 +9,14 @@ import (
 
 // Embed is an instance of `sqlc.embed(param)`
 type Embed struct {
-	Table  *ast.TableName
-	param  string
-	Node   *ast.ColumnRef
-	option string
+	Table *ast.TableName
+	param string
+	Node  *ast.ColumnRef
 }
 
 // Orig string to replace
 func (e Embed) Orig() string {
-	return fmt.Sprintf("sqlc.embed(%s, %s)", e.param, e.option)
+	return fmt.Sprintf("sqlc.embed(%s)", e.param)
 }
 
 // EmbedSet is a set of Embed instances
@@ -35,9 +34,7 @@ func (es EmbedSet) Find(node *ast.ColumnRef) (*Embed, bool) {
 
 // Embeds rewrites `sqlc.embed(param)` to a `ast.ColumnRef` of form `param.*`.
 // The compiler can make use of the returned `EmbedSet` while expanding the
-// `param.*` column refs to produce the correct source edits. If an optional
-// `nullable` is passed as a second parameter, embed attempts to use a nil
-// pointer as the embedded type.
+// `param.*` column refs to produce the correct source edits.
 func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
 	var embeds []*Embed
 
@@ -47,21 +44,12 @@ func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
 		switch {
 		case isEmbed(node):
 			fun := node.(*ast.FuncCall)
-			nArgs := len(fun.Args.Items)
 
-			if nArgs < 1 || nArgs > 2 {
+			if len(fun.Args.Items) == 0 {
 				return false
 			}
 
-			isNullable := false
-			if nArgs == 2 {
-				option, _ := flatten(fun.Args.Items[1])
-				if option == "nullable" {
-					isNullable = true
-				}
-			}
-			param, _ := flatten(fun.Args.Items[0])
-			fmt.Printf("DEBUG: nullable embed :: %#v\n", isNullable)
+			param, _ := flatten(fun.Args)
 
 			node := &ast.ColumnRef{
 				Fields: &ast.List{
