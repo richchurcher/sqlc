@@ -9,14 +9,19 @@ import (
 
 // Embed is an instance of `sqlc.embed(param)`
 type Embed struct {
-	Table *ast.TableName
-	param string
-	Node  *ast.ColumnRef
+	Table    *ast.TableName
+	param    string
+	Node     *ast.ColumnRef
+	nullable bool
 }
 
 // Orig string to replace
 func (e Embed) Orig() string {
-	return fmt.Sprintf("sqlc.embed(%s)", e.param)
+	call := "sqlc.embed(%s)"
+	if e.nullable {
+		call = "sqlc.embed(%s, nullable)"
+	}
+	return fmt.Sprintf(call, e.param)
 }
 
 // EmbedSet is a set of Embed instances
@@ -34,7 +39,9 @@ func (es EmbedSet) Find(node *ast.ColumnRef) (*Embed, bool) {
 
 // Embeds rewrites `sqlc.embed(param)` to a `ast.ColumnRef` of form `param.*`.
 // The compiler can make use of the returned `EmbedSet` while expanding the
-// `param.*` column refs to produce the correct source edits.
+// `param.*` column refs to produce the correct source edits. An optional
+// second parameter, `nullable`, can indicate that the column may be the result
+// of a LEFT JOIN (or otherwise NULL) allowing the compiler to generate a nil pointer.
 func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
 	var embeds []*Embed
 
@@ -44,12 +51,20 @@ func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
 		switch {
 		case isEmbed(node):
 			fun := node.(*ast.FuncCall)
+			nArgs := len(fun.Args.Items)
 
-			if len(fun.Args.Items) == 0 {
+			if nArgs == 0 {
 				return false
 			}
 
-			param, _ := flatten(fun.Args)
+			var option *string
+			if nArgs == 2 {
+				o, _ := flatten(fun.Args.Items[1])
+				if o == "nullable" {
+					option = &o
+				}
+			}
+			param, _ := flatten(fun.Args.Items[0])
 
 			node := &ast.ColumnRef{
 				Fields: &ast.List{
@@ -60,10 +75,12 @@ func Embeds(raw *ast.RawStmt) (*ast.RawStmt, EmbedSet) {
 				},
 			}
 
+			nullable := option != nil
 			embeds = append(embeds, &Embed{
-				Table: &ast.TableName{Name: param},
-				param: param,
-				Node:  node,
+				Table:    &ast.TableName{Name: param},
+				param:    param,
+				Node:     node,
+				nullable: nullable,
 			})
 
 			cr.Replace(node)

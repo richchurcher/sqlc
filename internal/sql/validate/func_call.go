@@ -39,7 +39,8 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 			return nil
 		}
 
-		if len(call.Args.Items) != 1 {
+		nArgs := len(call.Args.Items)
+		if nArgs < 1 {
 			v.err = &sqlerr.Error{
 				Message:  fmt.Sprintf("expected 1 parameter to sqlc.%s; got %d", fn.Name, len(call.Args.Items)),
 				Location: call.Pos(),
@@ -57,8 +58,21 @@ func (v *funcCallVisitor) Visit(node ast.Node) astutils.Visitor {
 			return nil
 		}
 
-		// If we have sqlc.arg or sqlc.narg, there is no need to resolve the function call.
-		// It won't resolve anyway, sinc it is not a real function.
+		// This is obviously not a flexible solution, but likely to go away entirely when the
+		// rest of this block does. Meanwhile, check for the only valid use of the second argument.
+		if nArgs == 2 && fn.Name == "embed" {
+			// TODO: fix
+			option := "nullable"
+			if option != "nullable" {
+				v.err = &sqlerr.Error{
+					Message:  fmt.Sprintf("expected option to sqlc.%s to be `nullable`, got %s", fn.Name, option),
+					Location: call.Pos(),
+				}
+				return nil
+			}
+		}
+
+		// Don't try to resolve `sqlc.` functions.
 		return nil
 	}
 
